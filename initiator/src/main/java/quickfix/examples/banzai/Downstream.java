@@ -110,7 +110,7 @@ public class Downstream {
         } catch (Exception e) {
             log.info(e.getMessage(), e);
         }finally{
-            testMarketDataRequest();
+                testMarketDataRequest();
 //            testNewOrderSingle();
 //            for(int i=0;i<10;i++){
 //                testQuoteRequest();
@@ -148,8 +148,9 @@ public class Downstream {
         marketDataRequest.setField(new SubscriptionRequestType('1'));
         marketDataRequest.setField(new MDReqID("TEST_marketDataRequest"));
         marketDataRequest.setField(new PartyID("EFX_PRICE"));
-        marketDataRequest.setField(new Symbol("CNY.JPY"));
-        marketDataRequest.setField(new MarketDepth(1));
+        marketDataRequest.setField(new Symbol("USD.CNY"));
+        marketDataRequest.setField(new CFICode("SPOT"));//SPOT,2D,1M...
+        marketDataRequest.setField(new OptPayAmount(Double.valueOf("25000000")));
         Session.sendToTarget(marketDataRequest,initiator.getSessions().get(0));
     }
 
