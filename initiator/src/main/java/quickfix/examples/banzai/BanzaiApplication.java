@@ -21,19 +21,7 @@ package quickfix.examples.banzai;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import quickfix.Application;
-import quickfix.DefaultMessageFactory;
-import quickfix.DoNotSend;
-import quickfix.FieldNotFound;
-import quickfix.FixVersions;
-import quickfix.IncorrectDataFormat;
-import quickfix.IncorrectTagValue;
-import quickfix.Message;
-import quickfix.RejectLogon;
-import quickfix.Session;
-import quickfix.SessionID;
-import quickfix.SessionNotFound;
-import quickfix.UnsupportedMessageType;
+import quickfix.*;
 import quickfix.field.*;
 import quickfix.field.Currency;
 import quickfix.fix50sp1.MarketDataIncrementalRefresh;
@@ -75,7 +63,17 @@ public class BanzaiApplication implements Application {
         observableLogon.logoff(sessionID);
     }
 
-    public void toAdmin(quickfix.Message message, SessionID sessionID) {
+    public void toAdmin(Message message, SessionID sessionID) {
+//        Session.lookupSession(sessionID).setTargetDefaultApplicationVersionID(new ApplVerID("8"));
+//        try {
+//            String msgType = message.getHeader().getString(MsgType.FIELD);
+//            if(MsgType.LOGON.compareTo(msgType) == 0){
+//                message.setString(Username.FIELD, "user");
+//                message.setString(Password.FIELD, "pass");
+//            }
+//        } catch (FieldNotFound e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void toApp(quickfix.Message message, SessionID sessionID) throws DoNotSend {

@@ -19,6 +19,8 @@
 
 package quickfix.examples.banzai;
 
+import com.pactera.fix.domain.MDR;
+import com.pactera.fix.domain.RS;
 import org.quickfixj.jmx.JmxExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +36,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -111,76 +112,63 @@ public class Downstream {
             String symbols="AUD.CAD,AUD.CHF,AUD.HKD,AUD.JPY,AUD.NZD,AUD.USD,CAD.CHF,CAD.HKD,CAD.JPY,CHF.HKD,CHF.JPY,EUR.AUD,EUR.CAD,EUR.CHF,EUR.GBP,EUR.HKD,EUR.JPY,EUR.NZD,EUR.USD,GBP.AUD,GBP.CAD,GBP.CHF,GBP.HKD,GBP.JPY,GBP.NZD,GBP.USD,HKD.CNH,HKD.JPY,NZD.CAD,NZD.CHF,NZD.HKD,NZD.JPY,NZD.USD,USD.CAD,USD.CHF,USD.CNH,USD.HKD,USD.JPY,XAU.USD";
             String[] symbolsArray=symbols.split("[,]");
             if(args!=null&&args.length>0){
-                String amount=args[0];
-                String settlType=args[1];
-                char subScribeType=args[2].charAt(0);
-                int index=Integer.valueOf(args[3]);
                 String symbol=args[4];
-                if(symbol!=null&&!symbol.equals("ALL")){
-                    testMarketDataRequest(amount,symbol,settlType,subScribeType,index);
-                }else{
+                if(symbol!=null&&!symbol.equals("")){
                     for(int i=0;i<39;i++){
-                        testMarketDataRequest(amount,symbolsArray[i],settlType,subScribeType,index);
+                        MDR mdr=new MDR();
+                        List<RS> rsGroup=new ArrayList<>();
+                        RS rs=new RS();
+                        rs.setSymbol(symbol);
+                        rs.setMdEntrySize(Double.valueOf(args[0]));
+                        rsGroup.add(rs);
+                        mdr.setRsGroup(rsGroup);
+                        mdr.setPartyID("EFX_PRICE");
+                        mdr.setMdReqID(UUID.randomUUID().toString());
+                        mdr.setAccount("");
+                        mdr.setSettlType(args[1]);
+                        mdr.setSubscriptionRequestType(args[2].charAt(0));
+                        mdr.setApplSeqNum(Integer.valueOf(args[3]));
+                        testMarketDataRequest(mdr);
                     }
                 }
             }else{
-                String amount="200000";
-                String settlType="0";
-                char subScribeType='1';
-                int index=1;
-                for(int i=0;i<39;i++){
-                    testMarketDataRequest(amount,symbolsArray[i],settlType,subScribeType,index);
-                }
+                MDR mdr=new MDR();
+                List<RS> rsGroup=new ArrayList<>();
+                RS rs=new RS();
+                rs.setSymbol("USD.JPY");
+                rs.setMdEntrySize(Double.valueOf("2500"));
+                rsGroup.add(rs);
+                mdr.setRsGroup(rsGroup);
+                mdr.setPartyID("EFX_PRICE");
+                mdr.setMdReqID(UUID.randomUUID().toString());
+                mdr.setAccount("");
+                mdr.setSettlType("0");
+                mdr.setSubscriptionRequestType('1');
+                mdr.setApplSeqNum(1);
+                testMarketDataRequest(mdr);
             }
         }
         shutdownLatch.await();
     }
 
-    private static void testNewOrderSingle() throws SessionNotFound {
-        NewOrderSingle newOrderSingle = new NewOrderSingle();
-        newOrderSingle.setField(new QuoteID("QuoteID_56ed394f-314c-4755-8a40-716e8e304113"));
-        newOrderSingle.setField(new ClOrdID("ClOrdID_"+UUID.randomUUID().toString()));
-        newOrderSingle.setField(new Account("usrid1001"));
-        newOrderSingle.setField(new QuoteRespID("20009"));
-        newOrderSingle.setField(new QuoteMsgID("GenIdeal"));
-        newOrderSingle.setField(new TradeDate(new SimpleDateFormat("yyyyMMdd").format(new Date())));
-        Session.sendToTarget(newOrderSingle,initiator.getSessions().get(0));
-    }
-
-    private static void testQuoteRequest() throws SessionNotFound{
-        QuoteRequest qr=new QuoteRequest();
-        qr.setField(new QuoteReqID("QuoteRequestID_"+ UUID.randomUUID().toString()));
-        qr.setField(new Symbol("USDCNY"));
-        qr.setField(new Side('1'));
-        qr.setField(new QuoteType(0));
-        qr.setField(new OrdType('2'));
-        qr.setField(new OptPayAmount(Double.valueOf("1000")));
-        qr.setField(new TransactTime(new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
-        Session.sendToTarget(qr,initiator.getSessions().get(0));
-    }
-
-    private static void testMarketDataRequest(String amount, String symbol,String settlType,char subScribeType,int index) throws SessionNotFound {
-        log.info("amount:"+amount+",symbol:"+symbol+",settlType:"+settlType+",subScribeType:"+subScribeType+",index:"+index);
-        MarketDataRequest marketDataRequest=new MarketDataRequest();
-        MarketDataRequest.NoRelatedSym sGroup=new MarketDataRequest.NoRelatedSym();
-        sGroup.setField(new Symbol(symbol));
-        sGroup.setField(new MDEntrySize(Double.valueOf(amount)));
-        marketDataRequest.addGroup(sGroup);
-        marketDataRequest.setField(new SubscriptionRequestType(subScribeType));//0-full,1-full+update,2-unsubscribe
-        marketDataRequest.setField(new MDReqID("TEST_marketDataRequest"));
-        marketDataRequest.setField(new PartyID("EFX_PRICE"));
-        marketDataRequest.setField(new ApplSeqNum(index));
-        marketDataRequest.setField(new Account("client1@trapi"));
-        marketDataRequest.setField(new SettlType(settlType));//0-SPOT,1-TODAY
-        Session.sendToTarget(marketDataRequest,initiator.getSessions().get(0));
-    }
-
-    private static void testQuoteCancel() throws SessionNotFound {
-        QuoteCancel quoteCancel=new QuoteCancel();
-        quoteCancel.setField(new QuoteID("TEST_QuoteID"));
-        quoteCancel.setField(new QuoteCancelType(5));
-        quoteCancel.setField(new QuoteReqID("test_QuoteReqID"));
-        Session.sendToTarget(quoteCancel,initiator.getSessions().get(0));
+    private static void testMarketDataRequest(MDR mdr) {
+        try {
+            MarketDataRequest marketDataRequest=new MarketDataRequest();
+            MarketDataRequest.NoRelatedSym sGroup=new MarketDataRequest.NoRelatedSym();
+            List<RS> rsl=mdr.getRsGroup();
+            sGroup.setField(new Symbol(rsl.get(0).getSymbol()));//订阅货币对
+            sGroup.setField(new MDEntrySize(rsl.get(0).getMdEntrySize()));//订阅数量
+            marketDataRequest.addGroup(sGroup);
+            marketDataRequest.setField(new SubscriptionRequestType(mdr.getSubscriptionRequestType()));//0-full,1-full+update,2-unsubscribe
+            marketDataRequest.setField(new MDReqID(mdr.getMdReqID()));//自定义
+            marketDataRequest.setField(new PartyID(mdr.getPartyID()));//EFX-EFX_PRICE,PDP-PDP_PRICE
+            marketDataRequest.setField(new ApplSeqNum(mdr.getApplSeqNum()));//用于取消定阅时必填，值为报价的1181的值
+            marketDataRequest.setField(new Account(mdr.getAccount()));
+            marketDataRequest.setField(new SettlType(mdr.getSettlType()));//0-SPOT,1-TODAY
+            Session.sendToTarget(marketDataRequest,initiator.getSessions().get(0));
+        } catch (SessionNotFound sessionNotFound) {
+            sessionNotFound.printStackTrace();
+        }
     }
 
 }
