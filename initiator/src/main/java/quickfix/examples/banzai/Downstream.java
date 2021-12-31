@@ -114,38 +114,58 @@ public class Downstream {
             if(args!=null&&args.length>0){
                 String symbol=args[4];
                 if(symbol!=null&&!symbol.equals("")){
-                    for(int i=0;i<39;i++){
+                    if(symbol.equals("ALL")){
+                        for(int i=0;i<39;i++){
+                            MDR mdr=new MDR();
+                            List<RS> rsGroup=new ArrayList<>();
+                            RS rs=new RS();
+                            rs.setSymbol(symbol);
+                            rs.setMdEntrySize(Double.valueOf(args[0]));
+                            rsGroup.add(rs);
+                            mdr.setRsGroup(rsGroup);
+                            mdr.setPartyID("EFX_PRICE");
+                            mdr.setMdReqID(UUID.randomUUID().toString());
+                            mdr.setAccount("");
+                            mdr.setSettlType(args[1]);
+                            mdr.setSubscriptionRequestType(args[2].charAt(0));
+                            mdr.setApplSeqNum(Integer.valueOf(args[3]));
+                            testMarketDataRequest(mdr);
+                        }
+                    }else{
                         MDR mdr=new MDR();
                         List<RS> rsGroup=new ArrayList<>();
                         RS rs=new RS();
                         rs.setSymbol(symbol);
-                        rs.setMdEntrySize(Double.valueOf(args[0]));
+                        rs.setMdEntrySize(Double.valueOf("2500"));
                         rsGroup.add(rs);
                         mdr.setRsGroup(rsGroup);
                         mdr.setPartyID("EFX_PRICE");
                         mdr.setMdReqID(UUID.randomUUID().toString());
                         mdr.setAccount("");
-                        mdr.setSettlType(args[1]);
-                        mdr.setSubscriptionRequestType(args[2].charAt(0));
-                        mdr.setApplSeqNum(Integer.valueOf(args[3]));
+                        mdr.setSettlType("0");
+                        mdr.setSubscriptionRequestType('1');
+                        mdr.setApplSeqNum(1);
                         testMarketDataRequest(mdr);
                     }
                 }
             }else{
-                MDR mdr=new MDR();
-                List<RS> rsGroup=new ArrayList<>();
-                RS rs=new RS();
-                rs.setSymbol("USD.JPY");
-                rs.setMdEntrySize(Double.valueOf("2500"));
-                rsGroup.add(rs);
-                mdr.setRsGroup(rsGroup);
-                mdr.setPartyID("EFX_PRICE");
-                mdr.setMdReqID(UUID.randomUUID().toString());
-                mdr.setAccount("");
-                mdr.setSettlType("0");
-                mdr.setSubscriptionRequestType('1');
-                mdr.setApplSeqNum(1);
-                testMarketDataRequest(mdr);
+                for(int i=0;i<39;i++){
+                    MDR mdr=new MDR();
+                    List<RS> rsGroup=new ArrayList<>();
+                    RS rs=new RS();
+                    rs.setSymbol(symbolsArray[i]);
+                    rs.setMdEntrySize(Double.valueOf("2500"));
+                    rsGroup.add(rs);
+                    mdr.setRsGroup(rsGroup);
+                    mdr.setPartyID("EFX_PRICE");
+                    mdr.setMdReqID(UUID.randomUUID().toString());
+                    mdr.setAccount("EFXTraderPrice");
+                    mdr.setSettlType("0");
+                    mdr.setSubscriptionRequestType('1');
+                    mdr.setApplSeqNum(1);
+                    testMarketDataRequest(mdr);
+                    shutdownLatch.countDown();
+                }
             }
         }
         shutdownLatch.await();
