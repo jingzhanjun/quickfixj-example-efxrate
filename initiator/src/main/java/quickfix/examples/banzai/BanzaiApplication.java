@@ -95,6 +95,11 @@ public class BanzaiApplication extends MessageCracker implements Application {
         }
     }
 
+    @Override
+    protected void onMessage(Message message, SessionID sessionID) throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+        log.info("message",message);
+    }
+
     public class MessageProcessor implements Runnable {
         private final quickfix.Message message;
         private final SessionID sessionID;
