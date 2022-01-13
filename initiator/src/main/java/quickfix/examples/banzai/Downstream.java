@@ -119,13 +119,13 @@ public class Downstream {
                             MDR mdr=new MDR();
                             List<RS> rsGroup=new ArrayList<>();
                             RS rs=new RS();
-                            rs.setSymbol(symbol);
+                            rs.setSymbol(symbolsArray[i]);
                             rs.setMdEntrySize(Double.valueOf(args[0]));
                             rsGroup.add(rs);
                             mdr.setRsGroup(rsGroup);
                             mdr.setPartyID("EFX_PRICE");
                             mdr.setMdReqID(UUID.randomUUID().toString());
-                            mdr.setAccount("");
+                            mdr.setAccount(args[5]);
                             mdr.setSettlType(args[1]);
                             mdr.setSubscriptionRequestType(args[2].charAt(0));
                             mdr.setApplSeqNum(Integer.valueOf(args[3]));
@@ -141,7 +141,7 @@ public class Downstream {
                         mdr.setRsGroup(rsGroup);
                         mdr.setPartyID("EFX_PRICE");
                         mdr.setMdReqID(UUID.randomUUID().toString());
-                        mdr.setAccount("");
+                        mdr.setAccount(args[5]);
                         mdr.setSettlType("0");
                         mdr.setSubscriptionRequestType('1');
                         mdr.setApplSeqNum(1);
@@ -164,7 +164,6 @@ public class Downstream {
                     mdr.setSubscriptionRequestType('1');
                     mdr.setApplSeqNum(1);
                     testMarketDataRequest(mdr);
-                    shutdownLatch.countDown();
                 }
             }
         }
